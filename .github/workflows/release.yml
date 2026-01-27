@@ -7,32 +7,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install deps
+        run: pip install pyinstaller requests wcwidth
+        shell: bash
       - name: Build bundle
         run: |
+          rm -rf build dist
+          TAG="${GITHUB_REF_NAME#v}"
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            pyinstaller --onefile --name weather-win.exe weather.py
+            pyinstaller --onefile --name "weather-v${TAG}-win.exe" weather.py
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            pyinstaller --onefile --name weather-macos weather.py
+            pyinstaller --onefile --name "weather-v${TAG}-macos" weather.py
           else
-            pyinstaller --onefile --name weather-linux-x86_64 weather.py
+            pyinstaller --onefile --name "weather-v${TAG}-linux-x86_64" weather.py
           fi
+        shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: weather-bundles
-          path: dist/*
+          name: weather-${{ matrix.os }}
+          path: dist/weather-*
 
   release:
     needs: build
@@ -42,11 +46,13 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: weather-bundles
           path: dist/
+          merge-multiple: true
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: |
+            dist/weather-*
+            dist/weather-*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
