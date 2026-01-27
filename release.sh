@@ -17,6 +17,9 @@ fi
 TAG="${1:-$(cat VERSION)}"
 TAG="${TAG#v}"
 
+echo "Cleaning previous build artifacts..."
+rm -rf build dist
+
 ./build.sh
 
 if ! gh release view "v$TAG" >/dev/null 2>&1; then

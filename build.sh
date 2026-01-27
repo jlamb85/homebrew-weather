@@ -14,6 +14,9 @@ if ! command -v pyinstaller >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "Cleaning previous build artifacts..."
+rm -rf build dist
+
 copy_runtime_files() {
   local target_dir="$1"
   mkdir -p "$target_dir"
@@ -23,22 +26,22 @@ copy_runtime_files() {
   fi
 }
 
+VERSION="$(cat VERSION)"
+VERSION="${VERSION#v}"
+
 OS_NAME="$(uname -s)"
 case "$OS_NAME" in
   Darwin)
-    SPEC="weather-v0.1.0-macos.spec"
-    NAME_ONEFILE="weather-v0.1.0-macos"
-    NAME_ONEDIR="weather-v0.1.0-macos-dir"
+    NAME_ONEFILE="weather-v${VERSION}-macos"
+    NAME_ONEDIR="weather-v${VERSION}-macos-dir"
     ;;
   Linux)
-    SPEC="weather-v0.1.0-linux-x86_64.spec"
-    NAME_ONEFILE="weather-v0.1.0-linux-x86_64"
-    NAME_ONEDIR="weather-v0.1.0-linux-x86_64-dir"
+    NAME_ONEFILE="weather-v${VERSION}-linux-x86_64"
+    NAME_ONEDIR="weather-v${VERSION}-linux-x86_64-dir"
     ;;
   MINGW*|MSYS*|CYGWIN*)
-    SPEC="weather-v0.1.0-win.exe.spec"
-    NAME_ONEFILE="weather-v0.1.0-win.exe"
-    NAME_ONEDIR="weather-v0.1.0-win-dir"
+    NAME_ONEFILE="weather-v${VERSION}-win.exe"
+    NAME_ONEDIR="weather-v${VERSION}-win-dir"
     ;;
   *)
     echo "Unsupported OS: $OS_NAME" >&2
@@ -46,13 +49,8 @@ case "$OS_NAME" in
     ;;
 esac
 
-if [[ ! -f "$SPEC" ]]; then
-  echo "Missing spec file: $SPEC" >&2
-  exit 1
-fi
-
-echo "Building one-file executable using $SPEC..."
-pyinstaller --clean --noconfirm "$SPEC"
+echo "Building one-file executable..."
+pyinstaller --clean --noconfirm --onefile weather.py -n "$NAME_ONEFILE"
 
 if [[ -f "dist/$NAME_ONEFILE" ]]; then
   copy_runtime_files "dist"
