@@ -6,4 +6,5 @@ __pycache__/
 weather_output.txt
 build/
 dist/
+favorites.json
 *-dir.spec
