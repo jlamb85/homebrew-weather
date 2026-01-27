@@ -66,6 +66,10 @@ except ImportError:
     print("Missing required module: requests. Please install it with 'pip install requests'.")
     sys.exit(1)
 try:
+    import certifi
+except ImportError:
+    certifi = None
+try:
     from wcwidth import wcswidth
 except ImportError:
     print("Missing required module: wcwidth. Please install it with 'pip install wcwidth'.")
@@ -613,11 +617,16 @@ def update_airports():
     Only includes airports with valid ICAO or IATA code, name, city, lat, lon.
     """
     import csv
+    import ssl
     import urllib.request
     url = "https://davidmegginson.github.io/ourairports-data/airports.csv"
     print("Downloading airports.csv from OurAirports...")
     try:
-        response = urllib.request.urlopen(url)
+        if certifi is not None:
+            context = ssl.create_default_context(cafile=certifi.where())
+            response = urllib.request.urlopen(url, context=context)
+        else:
+            response = urllib.request.urlopen(url)
         lines = [l.decode('utf-8') for l in response.readlines()]
         reader = csv.DictReader(lines)
         airports = {}
