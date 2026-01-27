@@ -69,6 +69,12 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 - In packaged builds (PyInstaller one-file or one-folder), place the JSON files beside the built executable to edit them.
 - `config.default.json` is shipped alongside the executable as a template for `--setup`.
 
+## airports.json fields
+- `name`, `city`, `lat`, `lon`
+- `icao_code`, `iata_code`
+- `iso_country`, `iso_region`
+- `elevation_ft`, `type`, `scheduled_service`
+
 ## Builds
 - Use `./build.sh` to build one-file and one-folder executables for your current OS.
 - The script copies `config.default.json` into the `dist/` output as `config.json`.

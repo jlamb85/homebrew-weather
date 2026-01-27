@@ -176,12 +176,35 @@ def load_airports():
                 data = json.load(f)
             airports = {}
             for code, entry in data.items():
-                airports[code.upper()] = (
-                    entry.get('name', ''),
-                    entry.get('city', ''),
-                    float(entry.get('lat', 0)),
-                    float(entry.get('lon', 0)),
-                )
+                code_upper = code.upper()
+                if isinstance(entry, dict):
+                    airports[code_upper] = {
+                        "name": entry.get("name", ""),
+                        "city": entry.get("city", ""),
+                        "lat": float(entry.get("lat", 0)),
+                        "lon": float(entry.get("lon", 0)),
+                        "icao_code": entry.get("icao_code", ""),
+                        "iata_code": entry.get("iata_code", ""),
+                        "iso_country": entry.get("iso_country", ""),
+                        "iso_region": entry.get("iso_region", ""),
+                        "elevation_ft": entry.get("elevation_ft"),
+                        "type": entry.get("type", ""),
+                        "scheduled_service": entry.get("scheduled_service", ""),
+                    }
+                elif isinstance(entry, (list, tuple)) and len(entry) >= 4:
+                    airports[code_upper] = {
+                        "name": entry[0],
+                        "city": entry[1],
+                        "lat": float(entry[2]),
+                        "lon": float(entry[3]),
+                        "icao_code": "",
+                        "iata_code": "",
+                        "iso_country": "",
+                        "iso_region": "",
+                        "elevation_ft": None,
+                        "type": "",
+                        "scheduled_service": "",
+                    }
             return airports
         except Exception as e:
             print(f"Warning: Could not load airports.json: {e}")
@@ -192,14 +215,36 @@ def load_airports():
 def save_airports(airports):
     path = get_airports_path()
     data = {}
-    for code, value in airports.items():
-        name, city, lat, lon = value
-        data[code.upper()] = {
-            'name': name,
-            'city': city,
-            'lat': lat,
-            'lon': lon
-        }
+    for code, entry in airports.items():
+        if isinstance(entry, dict):
+            data[code.upper()] = {
+                "name": entry.get("name", ""),
+                "city": entry.get("city", ""),
+                "lat": entry.get("lat", 0),
+                "lon": entry.get("lon", 0),
+                "icao_code": entry.get("icao_code", ""),
+                "iata_code": entry.get("iata_code", ""),
+                "iso_country": entry.get("iso_country", ""),
+                "iso_region": entry.get("iso_region", ""),
+                "elevation_ft": entry.get("elevation_ft"),
+                "type": entry.get("type", ""),
+                "scheduled_service": entry.get("scheduled_service", ""),
+            }
+        else:
+            name, city, lat, lon = entry
+            data[code.upper()] = {
+                "name": name,
+                "city": city,
+                "lat": lat,
+                "lon": lon,
+                "icao_code": "",
+                "iata_code": "",
+                "iso_country": "",
+                "iso_region": "",
+                "elevation_ft": None,
+                "type": "",
+                "scheduled_service": "",
+            }
     with open(path, 'w') as f:
         json.dump(data, f, indent=2)
 
@@ -251,7 +296,10 @@ def get_weather_by_airport(
     providers = config.get('providers', {})
     provider_info = providers.get(provider, {})
     provider_url = provider_info.get('url', 'https://api.open-meteo.com/v1/forecast')
-    name, city, lat, lon = airport
+    name = airport.get("name", "")
+    city = airport.get("city", "")
+    lat = airport.get("lat", 0)
+    lon = airport.get("lon", 0)
     # For now, only open-meteo is implemented for live data
     url = (
         f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
@@ -279,10 +327,14 @@ def get_weather_by_airport(
     if resp.status_code != 200:
         print(f"Error: Could not fetch weather for {airport_code} (status {resp.status_code})")
         return
-    name, city, lat, lon = airport
     current = data.get("current_weather", {})
     print("\n" + "=" * 40)
     print(f"Weather for {airport_code.upper()} - {name} ({city})")
+    iso_region = airport.get("iso_region", "")
+    iso_country = airport.get("iso_country", "")
+    if iso_region or iso_country:
+        region_str = ", ".join([v for v in [iso_region, iso_country] if v])
+        print(f"Region: {region_str}")
     print(f"Location: lat {lat:.4f}, lon {lon:.4f}")
     print(f"Source: {provider} ({provider_url})")
     print("=" * 40)
@@ -459,7 +511,19 @@ def add_custom_airport():
         return
     # Add to airports.json
     airports = load_airports()
-    airports[code] = (name, city, lat, lon)
+    airports[code] = {
+        "name": name,
+        "city": city,
+        "lat": lat,
+        "lon": lon,
+        "icao_code": code if len(code) == 4 else "",
+        "iata_code": code if len(code) == 3 else "",
+        "iso_country": "",
+        "iso_region": "",
+        "elevation_ft": None,
+        "type": "custom_airport",
+        "scheduled_service": "",
+    }
     save_airports(airports)
     print(f"Added custom airport {code}: {name} ({city})")
 
@@ -534,6 +598,11 @@ def update_airports():
             iata = row.get('iata_code', '').upper()
             name = row.get('name', '').strip()
             city = row.get('municipality', '').strip()
+            iso_country = row.get('iso_country', '').strip()
+            iso_region = row.get('iso_region', '').strip()
+            elevation_ft = row.get('elevation_ft')
+            airport_type = row.get('type', '').strip()
+            scheduled_service = row.get('scheduled_service', '').strip()
             lat = row.get('latitude_deg')
             lon = row.get('longitude_deg')
             try:
@@ -543,11 +612,39 @@ def update_airports():
                 continue
             if not name or not city:
                 continue
+            try:
+                elevation_ft = int(float(elevation_ft)) if elevation_ft not in (None, "") else None
+            except (TypeError, ValueError):
+                elevation_ft = None
             # Always add both ICAO and IATA codes as separate keys if both exist
             if icao:
-                airports[icao] = (name, city, lat, lon)
+                airports[icao] = {
+                    "name": name,
+                    "city": city,
+                    "lat": lat,
+                    "lon": lon,
+                    "icao_code": icao,
+                    "iata_code": iata,
+                    "iso_country": iso_country,
+                    "iso_region": iso_region,
+                    "elevation_ft": elevation_ft,
+                    "type": airport_type,
+                    "scheduled_service": scheduled_service,
+                }
             if iata and iata != icao:
-                airports[iata] = (name, city, lat, lon)
+                airports[iata] = {
+                    "name": name,
+                    "city": city,
+                    "lat": lat,
+                    "lon": lon,
+                    "icao_code": icao,
+                    "iata_code": iata,
+                    "iso_country": iso_country,
+                    "iso_region": iso_region,
+                    "elevation_ft": elevation_ft,
+                    "type": airport_type,
+                    "scheduled_service": scheduled_service,
+                }
         save_airports(airports)
         print(f"Updated airports.json with {len(airports)} airports.")
     except Exception as e:
@@ -561,8 +658,16 @@ def list_airports():
         print("No airports available.")
     else:
         print("Available airports:")
-        for code, (name, city, lat, lon) in sorted(airports.items()):
-            print(f"  {code}: {name} ({city})")
+        for code, entry in sorted(airports.items()):
+            name = entry.get("name", "")
+            city = entry.get("city", "")
+            iso_region = entry.get("iso_region", "")
+            iso_country = entry.get("iso_country", "")
+            region_str = ", ".join([v for v in [iso_region, iso_country] if v])
+            suffix = f" ({city})" if city else ""
+            if region_str:
+                suffix = f"{suffix} [{region_str}]"
+            print(f"  {code}: {name}{suffix}")
 
 
 def search_airports(query):
@@ -570,9 +675,20 @@ def search_airports(query):
     airports = load_airports()
     query = query.lower()
     found = False
-    for code, (name, city, lat, lon) in airports.items():
-        if query in code.lower() or query in name.lower() or query in city.lower():
-            print(f"  {code}: {name} ({city})")
+    for code, entry in airports.items():
+        name = entry.get("name", "")
+        city = entry.get("city", "")
+        iso_country = entry.get("iso_country", "")
+        iso_region = entry.get("iso_region", "")
+        airport_type = entry.get("type", "")
+        scheduled_service = entry.get("scheduled_service", "")
+        haystack = " ".join([code, name, city, iso_country, iso_region, airport_type, scheduled_service]).lower()
+        if query in haystack:
+            region_str = ", ".join([v for v in [iso_region, iso_country] if v])
+            suffix = f" ({city})" if city else ""
+            if region_str:
+                suffix = f"{suffix} [{region_str}]"
+            print(f"  {code}: {name}{suffix}")
             found = True
     if not found:
         print("No airports found matching query.")
