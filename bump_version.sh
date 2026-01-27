@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+usage() {
+  cat <<'USAGE'
+Usage: ./bump_version.sh [major|minor|patch]
+
+Increments VERSION (MAJOR.MINOR.PATCH).
+Defaults to patch if no argument is provided.
+USAGE
+}
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
@@ -12,6 +21,11 @@ fi
 if ! [[ "$(cat VERSION)" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "VERSION must be in MAJOR.MINOR.PATCH format" >&2
   exit 1
+fi
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
 fi
 
 bump="${1:-patch}"
@@ -31,10 +45,10 @@ case "$bump" in
     patch=$((patch + 1))
     ;;
   *)
-    echo "Usage: $0 [major|minor|patch]" >&2
+    usage
     exit 1
     ;;
- esac
+esac
 
 echo "${major}.${minor}.${patch}" > VERSION
 
