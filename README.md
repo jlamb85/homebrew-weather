@@ -93,11 +93,34 @@ GitHub Actions builds macOS, Windows, and Linux binaries on tag pushes. To trigg
 ./bump_version.sh patch
 git add VERSION
 git commit -m "Bump version"
-git tag v$(cat VERSION)
+git tag "$(cat VERSION)"
 git push && git push --tags
 ```
 
 This will publish a single release with the three binaries.
+
+### Common GitHub CLI commands
+```
+# List releases
+gh release list
+
+# View a release (including assets)
+gh release view v0.1.3
+
+# Edit release title or publish a draft
+gh release edit v0.1.3 --title "v0.1.3"
+gh release edit v0.1.3 --draft=false
+
+# Delete a release
+gh release delete v0.1.2 -y
+
+# Re-run a failed workflow run
+gh run list -L 5
+gh run rerun <run_id>
+
+# View failed logs for a run
+gh run view <run_id> --log-failed
+```
 
 ## Dependencies
 - Python 3
