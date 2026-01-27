@@ -86,6 +86,18 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 - Use `./bump_version.sh --set X.Y.Z` to set a specific version.
 - Run `./bump_version.sh --help` to see usage.
 - `VERSION` may include a leading `v` (e.g., `v0.1.0`).
+### GitHub Actions release (multi-OS)
+GitHub Actions builds macOS, Windows, and Linux binaries on tag pushes. To trigger a release:
+
+```
+./bump_version.sh patch
+git add VERSION
+git commit -m "Bump version"
+git tag v$(cat VERSION)
+git push && git push --tags
+```
+
+This will publish a single release with the three binaries.
 
 ## Dependencies
 - Python 3
