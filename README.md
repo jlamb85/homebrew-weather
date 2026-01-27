@@ -83,7 +83,9 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 - Use `./release.sh` to create a GitHub Release and upload binary assets only.
 - Source-code releases are disabled.
 - Use `./bump_version.sh [major|minor|patch]` to increment `VERSION` before a release.
+- Use `./bump_version.sh --set X.Y.Z` to set a specific version.
 - Run `./bump_version.sh --help` to see usage.
+- `VERSION` may include a leading `v` (e.g., `v0.1.0`).
 
 ## Dependencies
 - Python 3
