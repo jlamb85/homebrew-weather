@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-if [[ ! -f "config.default.json" ]]; then
-  echo "Missing config.default.json. Create it from config.json first." >&2
+if [[ ! -f "config.json" ]]; then
+  echo "Missing config.json." >&2
   exit 1
 fi
 
@@ -20,9 +20,8 @@ rm -rf build dist
 copy_runtime_files() {
   local target_dir="$1"
   mkdir -p "$target_dir"
-  cp "config.default.json" "$target_dir/config.default.json"
   if [[ ! -f "$target_dir/config.json" ]]; then
-    cp "config.default.json" "$target_dir/config.json"
+    cp "config.json" "$target_dir/config.json"
   fi
 }
 

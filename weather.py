@@ -99,13 +99,41 @@ def setup_default_config():
     if os.path.exists(path):
         print(f"config.json already exists at {path}")
         return
-    template_path = os.path.join(get_app_dir(), "config.default.json")
-    if not os.path.exists(template_path):
-        print(f"Error: Missing config.default.json at {template_path}")
-        return
     try:
-        with open(template_path, "r") as src:
-            data = json.load(src)
+        data = {
+            "unit": "F",
+            "provider": "noaa",
+            "providers": {
+                "open-meteo": {
+                    "url": "https://api.open-meteo.com/v1/forecast",
+                    "notes": "Free, no API key required, global",
+                },
+                "noaa": {
+                    "url": "https://api.weather.gov/",
+                    "notes": "US only, no API key required, official NWS",
+                },
+                "openweathermap": {
+                    "url": "https://api.openweathermap.org/data/2.5/onecall",
+                    "notes": "Free tier, global, requires API key (https://openweathermap.org/api)",
+                    "api_key": "YOUR_OPENWEATHERMAP_API_KEY",
+                },
+                "weatherapi": {
+                    "url": "https://api.weatherapi.com/v1/forecast.json",
+                    "notes": "Free tier, global, requires API key (https://www.weatherapi.com/)",
+                    "api_key": "YOUR_WEATHERAPI_KEY",
+                },
+                "weatherbit": {
+                    "url": "https://api.weatherbit.io/v2.0/forecast/daily",
+                    "notes": "Free tier, global, requires API key (https://www.weatherbit.io/api)",
+                    "api_key": "YOUR_WEATHERBIT_KEY",
+                },
+                "visualcrossing": {
+                    "url": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline",
+                    "notes": "Free tier, global, requires API key (https://www.visualcrossing.com/weather-api)",
+                    "api_key": "YOUR_VISUALCROSSING_KEY",
+                },
+            },
+        }
         with open(path, "w") as dst:
             json.dump(data, dst, indent=2)
         print(f"Created default config.json at {path}")

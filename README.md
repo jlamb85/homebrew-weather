@@ -62,13 +62,11 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 - Edit `config.json` to set default temperature unit, provider, and API keys.
 - Supports multiple weather providers (see config.json for details); currently Open-Meteo is used for live requests.
 - Use `--setup` to create a default `config.json` if one does not exist.
-- `--setup` copies from `config.default.json`, which ships alongside the executable (not embedded).
 ## Runtime files
 - The app reads and writes `config.json`, `favorites.json`, `airports.json`, and `weather_output.txt` from the same folder as the executable.
 - In development (running `python weather.py`), those files live next to `weather.py`.
 - In packaged builds (PyInstaller one-file or one-folder), place the JSON files beside the built executable to edit them.
-- `config.default.json` is shipped alongside the executable as a template for `--setup`.
-  - If you download a release asset, make sure `config.default.json` is in the same folder as the executable before running `--setup`.
+- `--setup` creates a default `config.json` automatically (no template file required).
 
 ## airports.json fields
 - `name`, `city`, `lat`, `lon`
@@ -78,7 +76,7 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 
 ## Builds
 - Use `./build.sh` to build one-file and one-folder executables for your current OS.
-- The script copies `config.default.json` into the `dist/` output as `config.json`.
+- The script copies `config.json` into the `dist/` output as a starting point.
 
 ## Releases
 - Use `./release.sh` to create a GitHub Release and upload binary assets only.
