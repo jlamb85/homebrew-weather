@@ -94,6 +94,11 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 GitHub Actions builds macOS, Windows, and Linux binaries on tag pushes. To trigger a release:
 
 ```
+./release_version.sh patch
+```
+
+Or manually:
+```
 ./bump_version.sh patch
 git add VERSION
 git commit -m "Bump version"
