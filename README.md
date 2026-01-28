@@ -94,6 +94,20 @@ A command-line tool to get current weather and multi-day forecasts by airport co
 - Run `./bump_version.sh --help` to see usage.
 - Use `./release_version.sh <major|minor|patch>` to bump, commit, tag, and push in one step (argument required).
 - `VERSION` may include a leading `v` (e.g., `v0.1.0`).
+### Release procedure
+```
+# Option A: one-step helper
+./release_version.sh <major|minor|patch>
+
+# Option B: manual
+./bump_version.sh <major|minor|patch>
+git add VERSION
+git commit -m "Bump version"
+git tag "$(cat VERSION)"
+git push && git push --tags
+```
+
+After pushing the tag, the GitHub Actions workflow `Build and Release Bundles` runs on the `v*` tag.
 ### Git helpers
 - Use `./git_commit_push.sh` to stage all changes, auto-generate a commit message, commit, and push.
 - Use `./git_commit_push.sh --edit` to open your editor before committing.
@@ -141,7 +155,10 @@ gh run view <run_id> --log-failed
 ## Dependencies
 - Python 3
 - requests
+- urllib3==1.26.18 (pinned to avoid LibreSSL warning on some macOS builds)
 - wcwidth
+
+If you see a LibreSSL/urllib3 v2 warning at runtime, install `urllib3==1.26.18`.
 
 Install dependencies:
 ```

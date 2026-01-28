@@ -64,6 +64,26 @@ except ImportError:
     print("Missing required module: requests. Please install it with 'pip install requests'.")
     sys.exit(1)
 try:
+    import urllib3
+except ImportError:
+    print("Missing required module: urllib3. Please install it with 'pip install urllib3==1.26.18'.")
+    sys.exit(1)
+try:
+    import ssl
+    urllib3_version = getattr(urllib3, "__version__", "")
+    openssl_version = getattr(ssl, "OPENSSL_VERSION", "")
+    if "LibreSSL" in openssl_version:
+        try:
+            parts = urllib3_version.split(".")
+            major = int(parts[0]) if parts else 0
+        except ValueError:
+            major = 0
+        if major >= 2:
+            print("Warning: urllib3 v2 with LibreSSL may cause issues. "
+                  "Install 'urllib3==1.26.18' to avoid this warning.")
+except Exception:
+    pass
+try:
     import certifi
 except ImportError:
     certifi = None

@@ -9,6 +9,7 @@
 - Added `git_commit_push.sh` helper with optional editor flag.
 - Added `release_version.sh` helper requiring explicit bump argument.
 - Added VS Code workspace setting to open `searches` as plain text.
+- Added urllib3 v2 + LibreSSL warning and pin guidance.
 
 ## 2026-01-26
 - Added support for `-wf` as a shorthand for `--weather-favorites`.

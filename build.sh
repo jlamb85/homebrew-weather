@@ -14,6 +14,11 @@ if ! command -v pyinstaller >/dev/null 2>&1; then
   exit 1
 fi
 
+if [[ -f "requirements.txt" ]]; then
+  echo "Installing Python dependencies..."
+  python -m pip install -r requirements.txt
+fi
+
 echo "Cleaning previous build artifacts..."
 rm -rf build dist
 

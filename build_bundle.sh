@@ -14,6 +14,11 @@ TAG=${TAG#v}
 echo "Cleaning previous builds..."
 rm -rf dist build ${NAME}.spec
 
+if [[ -f "requirements.txt" ]]; then
+  echo "Installing Python dependencies..."
+  python -m pip install -r requirements.txt
+fi
+
 # Linux x86_64
 echo "Building for Linux x86_64..."
 pyinstaller --onefile --name ${NAME}-v${TAG}-linux-x86_64 $APP
