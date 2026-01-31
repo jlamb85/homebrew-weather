@@ -2,7 +2,9 @@
 
 A command-line tool to get current weather and multi-day forecasts by airport code (ICAO/IATA).
 
-## Features
+[![Homebrew](https://img.shields.io)](https://github.com)
+
+## 🚀 Key Features
 - Get current weather for any supported airport by ICAO or IATA code
 - 7-day (or custom N-day) forecast with `--forecast`/`-f` and `--days N`
 - Table output with emoji and aligned columns
