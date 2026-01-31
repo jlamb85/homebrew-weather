@@ -87,4 +87,5 @@ if [[ "$EDIT" -eq 1 ]]; then
 else
   git commit -m "$COMMIT_MSG"
 fi
-git push
+git push origin_brew
+
